@@ -1,0 +1,170 @@
+Sub Main()
+
+'Declared Worksheet type of variable
+'looping through each worksheet-as new sheet will active and treat as current sheet
+'Current worksheet is passing to through each sub routine
+
+
+Dim CurrentWs As Worksheet
+
+
+For Each CurrentWs In Worksheets
+   Call GetUnique(CurrentWs)
+   Call OpenClose(CurrentWs)
+   Call TotalVolume(CurrentWs)
+   'Coloumn Heading for display the filtered data
+    Call GreatestTickerChange(CurrentWs)
+    Call ColourFormat(CurrentWs)
+    Call HeaderDisplay(CurrentWs)
+Next
+  
+End Sub
+
+Sub GetUnique(CurrentWs As Worksheet)
+'using VBA's advance Filter to search first value in K1 row
+'matching the same value from A coloum
+
+Dim Rng As Range
+With CurrentWs
+    Set Rng = .Range("K1")
+            .Range("A:A").AdvancedFilter Action:=xlFilterCopy, CopyToRange:=Rng, Unique:=True
+End With
+
+End Sub
+Sub OpenClose(CurrentWs As Worksheet)
+Dim NumberOfTicker As Long
+Dim TotalNoRows As Long
+Dim First As Long
+Dim Last As Long
+
+
+With CurrentWs
+    NumberOfTicker = .Range("K" & Rows.Count).End(xlUp).Row
+    TotalNoRows = .Range("A" & Rows.Count).End(xlUp).Row
+    
+'Store the last row value for coloum K and A
+    
+    For i = 2 To NumberOfTicker
+'looping through last no of coloum
+'finding the K's value in A coloum lookout to get the opening and closing value
+
+
+        First = .Range("A:A").Find(What:=.Range("K" & i), lookat:=xlWhole).Row
+        Last = .Range("A:A").Find(What:=.Range("K" & i), SearchDirection:=xlPrevious, lookat:=xlWhole).Row
+    
+        'Range("L" & i).Value = Range("C" & First).Value
+        'Range("M" & i).Value = Range("F" & Last).Value
+        .Range("L" & i).Value = .Range("F" & Last).Value - .Range("C" & First).Value
+        .Range("M" & i).Value = .Range("L" & i).Value / .Range("C" & First).Value
+           
+    Next i
+End With
+End Sub
+Sub TotalVolume(CurrentWs As Worksheet)
+Dim NumberOfTicker As Long
+'adding all the value of same ticker
+
+With CurrentWs
+    NumberOfTicker = .Range("K" & Rows.Count).End(xlUp).Row
+    
+    For i = 2 To NumberOfTicker
+      .Range("N" & i) = WorksheetFunction.SumIf(.Range("A:A"), .Range("K" & i), .Range("G:G"))
+     
+    Next i
+End With
+End Sub
+Sub GreatestTickerChange(CurrentWs As Worksheet)
+'calculating max, Min and sum
+'colour formatting for negative and positive value
+
+Dim First As Long
+
+Dim MinIndex As Integer
+Dim Minvalue As Double
+
+Dim MaxIndex As Integer
+Dim Maxvalue As Double
+
+Dim TotalVolumeIndex As Integer
+Dim TotalVolumeValue As Double
+
+With CurrentWs
+        
+   ' TotalNoRows = .Range("M" & Rows.Count).End(xlUp).Row
+    Minvalue = WorksheetFunction.Min(.Range("M:M"))
+    MinIndex = WorksheetFunction.Match(Minvalue, .Range("M:M"), 0)
+    
+    .Range("R4").Value = .Range("K" & MinIndex).Value
+    .Range("S4").Value = Minvalue
+    .Range("S4").NumberFormat = "0.00%"
+    
+    Maxvalue = WorksheetFunction.Max(.Range("M:M"))
+    MaxIndex = WorksheetFunction.Match(Maxvalue, .Range("M:M"), 0)
+    
+    .Range("R3").Value = .Range("K" & MaxIndex).Value
+    .Range("S3").Value = Maxvalue
+    .Range("S3").NumberFormat = "0.00%"
+    
+    TotalVolumeValue = WorksheetFunction.Max(.Range("N:N"))
+    TotalVolumeIndex = WorksheetFunction.Match(TotalVolumeValue, .Range("N:N"), 0)
+    .Range("R5").Value = .Range("K" & TotalVolumeIndex).Value
+    .Range("S5").Value = TotalVolumeValue
+    
+    .Range("S4").NumberFormat = "0.00%"
+    '.Range("M:M").NumberFormat = "0.00%"
+
+    '.Range("Q4") = WorksheetFunction.Max(.Range("M:M"))
+    '.Range("Q4").NumberFormat = "0.00%"
+    
+End With
+
+End Sub
+Sub HeaderDisplay(CurrentWs As Worksheet)
+
+With CurrentWs
+        .Range("K1").Value = "Ticker"
+        .Range("L1").Value = "Yearly Change"
+        .Range("M1").Value = "Percent Change"
+        .Range("N1").Value = "Total Stock Volume"
+        
+        .Range("Q3").Value = "Greatest % Increase"
+        .Range("Q4").Value = "Greatest % Decrease"
+        .Range("Q5").Value = "Greatest Total Volume"
+        
+        
+        .Range("R1").Value = "Ticker"
+        .Range("S1").Value = "Value"
+ End With
+End Sub
+Sub ColourFormat(CurrentWs As Worksheet)
+
+'Formating the colour of the rows as per value and changong into percentage
+
+Dim Percentage As String
+Dim NumberOfTicker As Long
+With CurrentWs
+
+    NumberOfTicker = .Range("K" & Rows.Count).End(xlUp).Row
+    
+     For i = 2 To NumberOfTicker
+        If .Range("L" & i).Value < 0 Then
+            .Range("L" & i).Interior.ColorIndex = 3
+        Else
+            .Range("L" & i).Interior.ColorIndex = 4
+         End If
+        
+        If .Range("M" & i).Value < 0 Then
+            'Percentage = FormatPercent(.Range("M" & Value), -0.5, vbTrue)
+            .Range("M" & i).Interior.ColorIndex = 3
+        Else
+             .Range("M" & i).Interior.ColorIndex = 4
+        End If
+        
+        .Range("M" & i).NumberFormat = "0.00%"
+        
+     Next i
+End With
+
+End Sub
+
+

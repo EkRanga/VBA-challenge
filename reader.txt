@@ -1,0 +1,5 @@
+Hi 
+My name is Ekta Rangari. 
+It’s my VBA programme to display the summarised ticker names with respect to highest increased and decreased rate in value of tickers and the highest volume of ticker as well. 
+Dataset was huge in number and that was one of the challenges among few.
+
